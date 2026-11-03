@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Embiierwette</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Barlow:wght@400;500;600&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+/* Layout: one centred column; the 0–50 sideline is the hero, season numbers sit underneath like a scorer's sheet */
+:root {
+  --bg: #f2f4f8;
+  --surface: #ffffff;
+  --ink: #141a2e;
+  --muted: #5a6380;
+  --line: #d6dbe7;
+  --track: #e2e6f0;
+  --blue: #1d428a;
+  --red: #c8202a;
+  --miss: #b9c0d2;
+  --font-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --font-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1220; --surface: #151c30; --ink: #eef1f8; --muted: #98a1bb;
+    --line: #29324e; --track: #1f2843; --blue: #7da0ec; --red: #ff6168; --miss: #3a4462;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1220; --surface: #151c30; --ink: #eef1f8; --muted: #98a1bb;
+  --line: #29324e; --track: #1f2843; --blue: #7da0ec; --red: #ff6168; --miss: #3a4462;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding-block: 40px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 28px;
+}
+header { text-align: center; display: grid; gap: 6px; }
+h1 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(3rem, 11vw, 6.5rem);
+  line-height: .9;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--blue);
+  text-wrap: balance;
+}
+.terms { margin: 0; color: var(--muted); font-size: 1.05rem; text-wrap: balance; }
+.terms strong { color: var(--ink); font-weight: 600; }
+
+/* Hero: the sideline */
+.board {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding-block: 28px 22px;
+  padding-inline: clamp(12px, 3vw, 32px);
+  display: grid;
+  gap: 18px;
+}
+.lane {
+  --embiid-w: clamp(64px, 13vw, 140px);
+  --crate-w: clamp(72px, 15vw, 160px);
+  display: grid;
+  grid-template-columns: 1fr var(--crate-w);
+  align-items: end;
+  column-gap: 4px;
+}
+.course {
+  position: relative;
+  padding-left: calc(var(--embiid-w) / 2);
+  min-width: 0;
+}
+.runner-zone { position: relative; height: calc(var(--embiid-w) * 1.266 + 46px); }
+.runner {
+  position: absolute;
+  bottom: 0;
+  left: var(--pct, 0%);
+  transform: translateX(-50%);
+  width: var(--embiid-w);
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  z-index: 2;
+}
+.runner img { width: 100%; height: auto; display: block; }
+.count {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.4rem, 3.4vw, 2rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: var(--blue);
+  color: var(--surface);
+  padding: 5px 12px 4px;
+  border-radius: 999px;
+  min-width: 2.4em;
+  text-align: center;
+}
+.track {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--track);
+  margin-top: 10px;
+}
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--pct, 0%);
+  background: var(--blue);
+  border-radius: 7px;
+}
+.ticks { position: relative; height: 34px; }
+.tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  font-size: .8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.tick::before { content: ""; width: 2px; height: 8px; background: var(--line); }
+.tick.goal { color: var(--red); font-weight: 600; }
+.tick.goal::before { background: var(--red); height: 12px; }
+.tick.passed::before { background: var(--blue); }
+.crate { display: grid; justify-items: center; gap: 4px; padding-bottom: 34px; }
+.crate img { width: 100%; height: auto; display: block; }
+.crate span {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: .95rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--red);
+}
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 28px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  font-size: 1rem;
+  color: var(--muted);
+}
+.status b {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.6rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-right: 4px;
+}
+.status .done b { color: var(--red); }
+
+/* Season numbers */
+.season { display: grid; gap: 14px; }
+.season-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+h2 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.9rem;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  margin: 0;
+}
+.season-head p { margin: 0; color: var(--muted); font-size: .95rem; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--line);
+  gap: 1px;
+}
+.stat { background: var(--surface); padding: 14px 16px; display: grid; gap: 2px; }
+.stat dt {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  font-weight: 600;
+}
+.stat dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.stat small { color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+.games { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.games span.lbl { color: var(--muted); font-size: .9rem; margin-right: 6px; }
+.g {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: .7rem; font-weight: 600;
+  background: var(--blue); color: var(--surface);
+}
+.g.dnp { background: transparent; color: var(--muted); border: 2px dashed var(--miss); }
+footer { text-align: center; color: var(--muted); font-size: .85rem; }
+
+@media (max-width: 640px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tick:not(.major) span { display: none; }
+  .page { padding-block: 24px 40px; }
+}
+</style>
+</head>
+<body>
+<script id="wette" type="application/json">
+{
+ "updated": "2026-11-03",
+ "target": 50,
+ "seasonGames": 82,
+ "games": [
+  {
+   "date": "2026-10-20",
+   "opp": "NYK",
+   "away": true,
+   "played": true,
+   "pts": 13,
+   "reb": 11,
+   "ast": 6,
+   "stl": 2,
+   "blk": 3,
+   "tov": 4,
+   "fgm": 4,
+   "fga": 15,
+   "tpm": 2,
+   "tpa": 7,
+   "ftm": 3,
+   "fta": 4
+  },
+  {
+   "date": "2026-10-22",
+   "opp": "CLE",
+   "away": false,
+   "played": true,
+   "pts": 24,
+   "reb": 7,
+   "ast": 1,
+   "stl": 0,
+   "blk": 0,
+   "tov": 1,
+   "fgm": 8,
+   "fga": 16,
+   "tpm": 1,
+   "tpa": 4,
+   "ftm": 7,
+   "fta": 9
+  },
+  {
+   "date": "2026-10-24",
+   "opp": "MIL",
+   "away": false,
+   "played": true,
+   "pts": 28,
+   "reb": 11,
+   "ast": 10,
+   "stl": 1,
+   "blk": 0,
+   "tov": 4,
+   "fgm": 8,
+   "fga": 20,
+   "tpm": 0,
+   "tpa": 3,
+   "ftm": 12,
+   "fta": 14
+  },
+  {
+   "date": "2026-10-25",
+   "opp": "DET",
+   "away": false,
+   "played": false
+  },
+  {
+   "date": "2026-10-28",
+   "opp": "IND",
+   "away": true,
+   "played": true,
+   "pts": 21,
+   "reb": 11,
+   "ast": 2,
+   "stl": 0,
+   "blk": 1,
+   "tov": 4,
+   "fgm": 9,
+   "fga": 17,
+   "tpm": 0,
+   "tpa": 3,
+   "ftm": 3,
+   "fta": 3
+  },
+  {
+   "date": "2026-10-30",
+   "opp": "NYK",
+   "away": false,
+   "played": true,
+   "pts": 10,
+   "reb": 7,
+   "ast": 7,
+   "stl": 1,
+   "blk": 1,
+   "tov": 4,
+   "fgm": 3,
+   "fga": 12,
+   "tpm": 0,
+   "tpa": 4,
+   "ftm": 4,
+   "fta": 4
+  },
+  {
+   "date": "2026-10-31",
+   "opp": "CHA",
+   "away": true,
+   "played": false
+  },
+  {
+   "date": "2026-11-02",
+   "opp": "CHI",
+   "away": false,
+   "played": true,
+   "pts": 15,
+   "reb": 8,
+   "ast": 3,
+   "stl": 0,
+   "blk": 0,
+   "tov": 3,
+   "fgm": 5,
+   "fga": 11,
+   "tpm": 0,
+   "tpa": 2,
+   "ftm": 5,
+   "fta": 6
+  }
+ ]
+}
+</script>
+
+<div class="page">
+  <header>
+    <h1>Embiierwette</h1>
+    <p class="terms">Schafft <strong>Joel Embiid</strong> in der Regular Season 2026/27 <strong>mindestens 50 Spiele</strong>?</p>
+  </header>
+
+  <section class="board" aria-label="Fortschritt der Wette">
+    <div class="lane">
+      <div class="course">
+        <div class="runner-zone">
+          <div class="runner" id="runner">
+            <img src="embiid.webp" alt="Joel Embiid">
+            <div class="count" id="count">0</div>
+          </div>
+        </div>
+        <div class="track"><div class="fill" id="fill"></div></div>
+        <div class="ticks" id="ticks"></div>
+      </div>
+      <div class="crate">
+        <img src="kasten.webp" alt="Kasten Schultheiss">
+        <span>Ziel: 50</span>
+      </div>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <section class="season" aria-label="Saisonstatistik">
+    <div class="season-head">
+      <h2>Saison 2026/27</h2>
+      <p id="season-sub"></p>
+    </div>
+    <dl class="stats" id="stats"></dl>
+    <div class="games" id="games"></div>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('wette').textContent);
+  var log = data.games;
+  var played = log.filter(function (g) { return g.played; });
+  var gp = played.length;
+  var target = data.target;
+  var teamLeft = data.seasonGames - log.length;
+  var need = Math.max(0, target - gp);
+  var pct = Math.min(gp, target) / target * 100;
+
+  var course = document.querySelector('.course');
+  course.style.setProperty('--pct', pct + '%');
+  document.getElementById('runner').style.setProperty('--pct', pct + '%');
+  document.getElementById('fill').style.setProperty('--pct', pct + '%');
+  document.getElementById('count').textContent = gp;
+
+  var ticks = document.getElementById('ticks');
+  for (var i = 0; i <= target; i += 5) {
+    var t = document.createElement('div');
+    t.className = 'tick' + (i % 10 === 0 ? ' major' : '') + (i === target ? ' goal' : '') + (i <= gp && i > 0 ? ' passed' : '');
+    t.style.left = (i / target * 100) + '%';
+    var s = document.createElement('span');
+    s.textContent = i;
+    t.appendChild(s);
+    ticks.appendChild(t);
+  }
+
+  var status = document.getElementById('status');
+  function item(num, text, cls) {
+    var d = document.createElement('div');
+    if (cls) d.className = cls;
+    var b = document.createElement('b');
+    b.textContent = num;
+    d.appendChild(b);
+    d.appendChild(document.createTextNode(text));
+    status.appendChild(d);
+  }
+  if (gp >= target) {
+    item(gp, ' Spiele: Ziel erreicht', 'done');
+  } else {
+    item(gp, ' von 50 Spielen');
+    item(need, ' Spiele fehlen noch');
+    item(teamLeft, ' Spiele der 76ers übrig');
+  }
+  if (gp < target && need > teamLeft) {
+    var x = document.createElement('div');
+    x.className = 'done';
+    x.textContent = '50 Spiele sind nicht mehr erreichbar';
+    status.appendChild(x);
+  }
+
+  function sum(k) { return played.reduce(function (a, g) { return a + (g[k] || 0); }, 0); }
+  function avg(k) { return gp ? (sum(k) / gp).toFixed(1).replace('.', ',') : '–'; }
+  function pctOf(m, a) {
+    var mm = sum(m), aa = sum(a);
+    return { v: aa ? (mm / aa * 100).toFixed(1).replace('.', ',') + ' %' : '–', s: mm + '/' + aa };
+  }
+  var rows = [
+    ['Punkte', avg('pts'), 'pro Spiel'],
+    ['Rebounds', avg('reb'), 'pro Spiel'],
+    ['Assists', avg('ast'), 'pro Spiel'],
+    ['Blocks', avg('blk'), 'pro Spiel'],
+    ['Feldwurf', pctOf('fgm', 'fga').v, pctOf('fgm', 'fga').s + ' getroffen'],
+    ['Dreier', pctOf('tpm', 'tpa').v, pctOf('tpm', 'tpa').s + ' getroffen'],
+    ['Freiwurf', pctOf('ftm', 'fta').v, pctOf('ftm', 'fta').s + ' getroffen'],
+    ['Steals', avg('stl'), 'pro Spiel']
+  ];
+  var stats = document.getElementById('stats');
+  rows.forEach(function (r) {
+    var w = document.createElement('div'); w.className = 'stat';
+    var dt = document.createElement('dt'); dt.textContent = r[0];
+    var dd = document.createElement('dd'); dd.textContent = r[1];
+    var sm = document.createElement('small'); sm.textContent = r[2];
+    w.appendChild(dt); w.appendChild(dd); w.appendChild(sm);
+    stats.appendChild(w);
+  });
+
+  document.getElementById('season-sub').textContent =
+    gp + ' von ' + log.length + ' Spielen der 76ers gespielt';
+
+  var games = document.getElementById('games');
+  var lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = 'Spiele bisher:';
+  games.appendChild(lbl);
+  log.forEach(function (g) {
+    var c = document.createElement('div');
+    c.className = 'g' + (g.played ? '' : ' dnp');
+    c.textContent = g.opp;
+    var d = new Date(g.date + 'T12:00:00');
+    c.title = d.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' }) + ' ' +
+      (g.away ? '@ ' : 'vs ') + g.opp + (g.played ? ': ' + g.pts + ' Punkte' : ': nicht gespielt');
+    games.appendChild(c);
+  });
+
+  var upd = new Date(data.updated + 'T12:00:00');
+  document.getElementById('foot').textContent =
+    'Stand: ' + upd.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }) +
+    ' · Daten: NBA-Boxscores';
+})();
+</script>
+
+</body>
+</html>
